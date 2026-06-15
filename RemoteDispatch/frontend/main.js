@@ -2,7 +2,8 @@ const initialZoom = 20;
 const earthCircumference = 40e6;
 const metersToDegrees = 360 / earthCircumference;
 
-var loggingEnabled = false;
+let verboseEnabled = false,
+	verboseInConsole = false;
 
 /////////////////////
 // map
@@ -94,6 +95,19 @@ document.getElementById('playerNameCheckbox')
 		playerMarkers.forEach(({ playerLabel }) => {
 			playerLabel.getElement().style.display = playerTooltipEnabled ? '' : 'none';
 		});
+	});
+
+// frontend debugging UI
+document.getElementById('verboseCheckbox')
+	.addEventListener('change', e => {
+		verboseEnabled = e.target.checked;
+		// immediately toggle verbose panel visibility
+		document.getElementById('verboseDebugPanel').style.display = verboseEnabled ? '' : 'none';
+		//possibly add need to uncheck verboseInConsole when turning this off
+	});
+document.getElementById('verboseInConsole')
+	.addEventListener('change', e => {
+		verboseInConsole = e.target.checked;
 	});
 
 /////////////////////
@@ -336,35 +350,35 @@ document.getElementById('jobActiveOnly').addEventListener('change', e => {
 const trackPolyLines = new Map();
 
 function colorForYardId(yardId) {
-  switch (yardId) {
-    //official
-    case 'CME': return '#686868';
-    case 'CMS': return '#4e554e';
-    case 'CP': return '#583d3d';
-    case 'CS': return '#97adc2';
-    case 'CW': return '#a7a7a7';
-    case 'FF': return '#77a6e3';
-    case 'FM': return '#ddaa4d';
-    case 'FRC': return '#92b66a';
-    case 'FRS': return '#609161';
-    case 'GF': return '#c97fa2';
-    case 'HB': return '#816c94';
-    case 'IME': return '#b66861';
-    case 'IMW': return '#9a5847';
-    case 'MB': return '#988c5f';
-    case 'MF': return '#dc885b';
-    case 'OR': return '#935478';
-    case 'OWC': return '#555a62';
-    case 'OWN': return '#625d55';
-    case 'SM': return '#7b8394';
-    case 'SW': return '#cda888';
-    //Passenger Jobs mod platforms
+	switch (yardId) {
+		//official
+		case 'CME': return '#686868';
+		case 'CMS': return '#4e554e';
+		case 'CP': return '#583d3d';
+		case 'CS': return '#97adc2';
+		case 'CW': return '#a7a7a7';
+		case 'FF': return '#77a6e3';
+		case 'FM': return '#ddaa4d';
+		case 'FRC': return '#92b66a';
+		case 'FRS': return '#609161';
+		case 'GF': return '#c97fa2';
+		case 'HB': return '#816c94';
+		case 'IME': return '#b66861';
+		case 'IMW': return '#9a5847';
+		case 'MB': return '#988c5f';
+		case 'MF': return '#dc885b';
+		case 'OR': return '#935478';
+		case 'OWC': return '#555a62';
+		case 'OWN': return '#625d55';
+		case 'SM': return '#7b8394';
+		case 'SW': return '#cda888';
+		//Passenger Jobs mod platforms
 
-    //unsure
-    case 'HMB': return '#816c94';
-    case 'MFMB': return '#dc885b';
-    default: return 'steelblue';
-  }
+		//unsure
+		case 'HMB': return '#816c94';
+		case 'MFMB': return '#dc885b';
+		default: return 'steelblue';
+	}
 }
 
 function createTrackLabel(trackId, position, angle) {
@@ -379,7 +393,7 @@ function createTrackLabel(trackId, position, angle) {
 	svg.innerHTML = `<text text-anchor="middle" dominant-baseline="central" transform="${rotation}" font-family="Arial" font-weight="bold" fill="${colorForYardId(trackId.split('-')[0])}" stroke="black" stroke-width="0.25px">${trackId.split('-')[1]}</text>`;
 	L.svgOverlay(svg, bounds, { renderer: canvasRenderer })
 		.addTo(map)
-		.setZIndex(1000); //1 from 1000 to allow train cars to draw on top of them
+		.setZIndex(1000);
 }
 
 function pointDistance(p1, p2) {
@@ -487,19 +501,19 @@ function labelPerLine(label) {
 }
 
 function createYardLabel(yard) {
-  const size = 0.005;
-  const position = yard.position;
-  const bounds = [[position[0] - size, position[1] - size], [position[0] + size, position[1] + size]];
+	const size = 0.005;
+	const position = yard.position;
+	const bounds = [[position[0] - size, position[1] - size], [position[0] + size, position[1] + size]];
 
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('id', yard.id)
-  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  svg.setAttribute('viewBox', '-50 -10 100 100');
-  svg.innerHTML =
+	const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+	svg.setAttribute('id', yard.id)
+	svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+	svg.setAttribute('viewBox', '-50 -10 100 100');
+	svg.innerHTML =
 	`<text text-anchor="middle" dominant-baseline="central" font-family="Arial" font-weight="bold" fill="${colorForYardId(yard.id)}" stroke="black" stroke-width="0.25px">${labelPerLine(yard.label)}</text>`;
-  L.svgOverlay(svg, bounds, { renderer: canvasRenderer })
-  .addTo(map)
-  .setZIndex(-1000);
+	L.svgOverlay(svg, bounds, { renderer: canvasRenderer })
+	.addTo(map)
+	.setZIndex(-1000);
 }
 
 /////////////////////
@@ -701,20 +715,20 @@ function createYardPoIs() {
 }
 
 function createYardPoI(yard, poi) {
-  const size = 0.000025;
-  const position = poi.position;
-  const bounds = [[position[0] - size, position[1] - size], [position[0] + size, position[1] + size]];
+	const size = 0.000025;
+	const position = poi.position;
+	const bounds = [[position[0] - size, position[1] - size], [position[0] + size, position[1] + size]];
 
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('id', yard.id + '_' + poi.poi)
-  svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  svg.setAttribute('viewBox', '-50 -50 100 100');
-  svg.innerHTML =
+	const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+	svg.setAttribute('id', yard.id + '_' + poi.poi)
+	svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+	svg.setAttribute('viewBox', '-50 -50 100 100');
+	svg.innerHTML =
 	`<circle cx="0" cy="0" r="45" fill="${interestTypes[poi.poi].circCol}" stroke="white" stroke-width="0.5em" />
 	${interestTypes[poi.poi].symbol}`;
-  L.svgOverlay(svg, bounds, { renderer: canvasRenderer })
-  .addTo(map)
-  .setZIndex(1500); // above track labels (1000) and below cars (2000)
+	L.svgOverlay(svg, bounds, { renderer: canvasRenderer })
+	.addTo(map)
+	.setZIndex(1500); // above track labels (1000) and below cars (2000)
 }
 
 /////////////////////
@@ -734,10 +748,17 @@ const junctionsReady = tracksReady
 	);
 
 function toggleJunction(junctionId) {
-	fetch(new URL(`/junction/${junctionId}/toggle`, location), { method: 'POST' })
-		.then(resp => resp.json())
-		.then(selectedBranch => updateJunctionOverlay(junctionId, selectedBranch))
-		.catch(err => { });
+	return fetch(new URL(`/junction/${junctionId}/toggle`, location), { method: 'POST' })
+		.then(r => {
+			if (r.status === 403) console.warn('No permission to toggle junction #' + junctionId);
+			else if (r.status === 404) console.warn('Junction not found: #' + junctionId);
+
+			return r.json();
+		})
+		.catch(err => {
+			console.error(`Failed to toggle junction #${junctionId}:`, err);
+			throw err;
+		});
 }
 
 const junctionCanvasSize = 60;
@@ -805,7 +826,7 @@ function createJunctionMarker(p, junctionId, displayName) {
 		{ interactive: true, renderer: canvasRenderer })
 		.addEventListener('click', () => toggleJunction(junctionId))
 		.addTo(map)
-		.setZIndex(Math.floor(p[0] * 100000 + p[1] * 100000));
+		.setZIndex(Math.floor(p[0] + p[1] * 100000)); // doesn't need _that_ huge of a zindex...
 }
 
 function updateAllJunctions(states) {
@@ -816,76 +837,259 @@ function updateAllJunctions(states) {
 // signals
 
 const signalMarkers = new Map();
-const signalIconSize = [8, 32];
 const signalIconAnchor = [12, 12];
 
-// Cache L.Icon instances per aspect to avoid recreating them on every update
-const signalIconCache = new Map();
 
-function getSignalIconUrl(aspect, type) {
-	if (loggingEnabled)
-		console.log(`Getting signal icon for aspect ${aspect} and type ${type}`);
-	if (!aspect || aspect === 'OFF')
-		return 'res/signals.off.webp';
-
-	if (aspect.toUpperCase() == 'TRAIN_DETECTED' && type.toUpperCase() == 'INTOYARD')
-		return 'res/signals.yard_train_detected.webp';
-
-	if ([
-		'MAIN_GREEN',
-		'MAIN_RED',
-		'MAIN_YELLOW',
-		'NEXT_RED',
-		'NEXT_YELLOW',
-		'OPEN',
-		'TRAIN_CROSSING',
-		'TRAIN_DETECTED'
-	].includes(aspect.toUpperCase())) {
-		return `res/signals.${aspect.toLowerCase()}.webp`;
-	}
-
-	// GOK
-	return 'res/signals.off.webp';
+function makeSafeSignalId(id) {
+	if (!id) return '';
+	// Replace characters that have special meaning in CSS:
+	// . (class), : (pseudo-class/attribute), [ (attribute selector),
+	// # (ID), $ (data attribute), { } (content), ( ) (expression),
+	// * (universal), + (adjacent sibling), > (child), space (descendant), % (percent)
+	return id.replace(/[\.\:\[\]\#\$%\{\}\(\)\*\+\>\s]+/g, '_');
 }
 
-function getSignalIcon(aspect, type) {
-	const url = getSignalIconUrl(aspect, type);
-	if (!signalIconCache.has(url)) {
-		signalIconCache.set(url, L.icon({
-			iconUrl: url,
-			iconSize: signalIconSize,
-			iconAnchor: signalIconAnchor,
-		}));
+function getSignalIconUrl(aspect, mode, type) {
+	if (verboseInConsole)
+		console.log(`Getting signal icon for aspect ${aspect} and mode ${mode}, of type ${type}`);
+	if (!aspect || aspect === 'OFF') {
+		if (type == "Distant") return 'res/signals.distant_off.webp';
+		return 'res/signals.off.webp';
 	}
-	return signalIconCache.get(url);
+
+	if (type === "Distant") {
+		// Distant signals do not have a manual image
+		if (verboseInConsole)
+			console.log("Signal is of type 'distant'")
+		mode = "automatic";
+	}
+	const imageName = `${aspect.toLowerCase()}_${mode.toLowerCase()}`;
+
+	// Match all known aspects by lowercasing the input
+	const imageNames = [
+		's1_manual', 's1c_manual', 's2_manual', 's4_manual', 's6_manual',
+		's1_automatic', 's1c_automatic', 's2_automatic', 's4_automatic', 's6_automatic',
+		'ds1_automatic', 'ds2_automatic', 'ds3_automatic', 'ds4_automatic'
+	].map(x => x.toLowerCase());
+
+	if (!imageNames.includes(imageName)) {
+		console.log(`No valid image found for a signal with aspect ${aspect} and mode ${mode} of type ${type}. imageName var was ${imageName}`);
+		return 'res/signals.all.webp';
+	}
+
+	return `res/signals.${imageName}.webp`;
+}
+
+const signalIconBaseSize = { normal: [16, 80], distant: [16, 32] };
+const signalIconMaxScale = 3; // cap: icons won't grow beyond 3× their base size
+
+function getSignalIconSize(type) {
+	const base = type === "Distant" ? signalIconBaseSize.distant : signalIconBaseSize.normal;
+	const zoom = map.getZoom();
+	const scale = zoom < initialZoom - 4 ? 1 / (2 ** (initialZoom - 4 - zoom)) : 1;
+	const minScale = 1 / signalIconMaxScale; // floor so they don't vanish entirely
+	const s = Math.max(scale, minScale);
+	return [Math.round(base[0] * s), Math.round(base[1] * s)];
+}
+
+function getSignalIcon(aspect, mode, type) {
+	const url = getSignalIconUrl(aspect, mode, type);
+	const iconSize = getSignalIconSize(type);
+	return L.icon({
+		iconUrl: url,
+		iconSize: iconSize,
+		iconAnchor: signalIconAnchor,
+	});
+}
+
+function createSignalMarker(signalId, signalData) {
+	const aspect = signalData.CurrentAspectId || 'OFF';
+	const mode = signalData.Mode || 'Automatic';
+	const signalType = signalData.Type
+	const position = signalData.Position;
+
+	const marker = L.marker(position, {
+		icon: getSignalIcon(aspect, mode, signalType),
+		interactive: true,
+		title: signalId,
+		zIndexOffset: Math.floor((position[0] + position[1]) * 2000), // signals should appear above cars but below players
+	})
+		.bindPopup(() => buildSignalPopup(signalId, signalType), { maxWidth: 260 })
+		.addTo(map);
+
+	signalMarkers.set(signalId, { marker, aspect, mode, type: signalType });
+}
+
+function buildSignalPopup(signalId, signalType) {
+	if (verboseInConsole) {
+		console.log("buildSignalPopup called");
+		console.log(`Signal ID   : ${signalId}`);
+		console.log(`Signal type : ${signalType}`);
+	}
+
+	const state = signalMarkers.get(signalId);
+	if (!state)
+		return '';
+
+	if (signalType == "Distant") {
+		const el = document.createElement('strong');
+		el.style.fontSize = '1.1em';
+		el.textContent = signalId;
+		return el;
+	}
+
+	// If mode is not known, assume manual
+	const isManual = state.mode === 'Manual';
+	// Get valid aspects
+	var validTypeAspects = [
+		{ "aspect": "S2", "name": "Clear" },
+		{ "aspect": "S4", "name": "Expect Caution" },
+		{ "aspect": "S6", "name": "Caution" },
+		{ "aspect": "S1", "name": "Stop" },
+		{ "aspect": "S1c", "name": "Stop, train crossing" }
+	]
+
+	const container = document.createElement('div');
+	container.style.cssText = 'min-width:200px;font-family:sans-serif';
+	container.innerHTML = `
+		<strong style="font-size:1.1em">${signalId}</strong>
+			<div style="margin:6px 0">
+				Mode: <strong id="sig-mode-label-${makeSafeSignalId(signalId)}">${state.mode}</strong>
+			</div>
+			<label style="display:flex;align-items:center;gap:6px;margin-bottom:10px;cursor:pointer">
+				<input type="checkbox" id="sig-manual-${makeSafeSignalId(signalId)}" ${isManual ? 'checked' : ''}>
+				Manual control
+			</label>
+			<div id="sig-aspect-row-${makeSafeSignalId(signalId)}" style="display:${isManual ? 'block' : 'none'}">
+				<div style="margin-bottom:4px">Set aspect:</div>
+				<select id="sig-aspect-select-${makeSafeSignalId(signalId)}" style="width:100%;margin-bottom:8px;max-height:120px;overflow-y:auto">
+					${validTypeAspects.map(a =>
+		`<option value="${a.aspect}" ${a.aspect === state.aspect ? 'selected' : ''}>${a.name}</option>`
+	).join('')}
+				</select>
+				<button id="sig-apply-${makeSafeSignalId(signalId)}"
+					style="width:100%;padding:4px;background:#2a6;color:#fff;border:none;border-radius:3px;cursor:pointer">
+					Apply aspect
+				</button>
+			</div>
+			<div id="sig-status-${makeSafeSignalId(signalId)}" style="margin-top:6px;font-size:0.85em;color:gray"></div>
+		`;
+
+	const manualCheckbox = container.querySelector(`#sig-manual-${makeSafeSignalId(signalId)}`);
+	if (manualCheckbox) {
+		manualCheckbox.addEventListener('change', e => {
+			const newMode = e.target.checked ? 'Manual' : 'Automatic';
+			if (newMode === state.mode) return; // already in this mode, skip
+			postSignalControl(signalId, { mode: newMode })
+				.then(ok => {
+					if (ok) {
+						const entry = signalMarkers.get(signalId);
+						if (entry) {
+							entry.mode = newMode;
+							entry.marker.setIcon(getSignalIcon(entry.aspect, entry.mode, signalType));
+						}
+						const modeLabel = container.querySelector(`#sig-mode-label-${makeSafeSignalId(signalId)}`);
+						if (modeLabel) modeLabel.textContent = newMode;
+						const aspectRow = container.querySelector(`#sig-aspect-row-${makeSafeSignalId(signalId)}`);
+						if (aspectRow) aspectRow.style.display = e.target.checked ? 'block' : 'none';
+						setSignalStatus(signalId, container, `Mode set to ${newMode}.`);
+					} else {
+						setSignalStatus(signalId, container, 'Failed to set mode.', true);
+						e.target.checked = !e.target.checked; // revert on failure
+					}
+				});
+		});
+	}
+
+	const applyButton = container.querySelector(`#sig-apply-${makeSafeSignalId(signalId)}`);
+	if (applyButton) {
+		applyButton.addEventListener('click', () => {
+			const aspectSelect = container.querySelector(`#sig-aspect-select-${makeSafeSignalId(signalId)}`);
+			if (!aspectSelect) return;
+			const aspect = aspectSelect.value;
+			postSignalControl(signalId, { aspect })
+				.then(ok => {
+					setSignalStatus(signalId, container,
+						ok ? `Aspect set to ${aspect}.` : 'Failed to set aspect.', !ok);
+					if (ok) {
+						const entry = signalMarkers.get(signalId);
+						if (entry) {
+							entry.aspect = aspect;
+							entry.marker.setIcon(getSignalIcon(entry.aspect, entry.mode, signalType));
+						}
+					}
+				});
+		});
+	}
+
+	return container;
+}
+
+function setSignalStatus(signalId, container, msg, isError = false) {
+	const statusEl = container.querySelector(`#sig-status-${makeSafeSignalId(signalId)}`);
+	if (statusEl) {
+		statusEl.textContent = msg;
+		statusEl.style.color = isError ? '#c44' : 'gray';
+	}
+}
+
+function postSignalControl(signalId, params) {
+	return fetch(new URL(`/signal/control`, location), {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ signalId, ...params })
+	})
+		.then(r => {
+			if (r.ok || r.status === 204) return true;
+
+			if (r.status === 403) console.warn('No permission to control signal #' + signalId);
+			else if (r.status === 404) console.warn('Signal not found: #' + signalId);
+			else if (r.status === 400) console.warn('Bad request when controlling signal ' + signalId);
+			else if (r.status === 401) console.warn('Unauthorized to control signal ' + signalId);
+			else if (r.status >= 500) console.warn('Server error (' + r.status + ') when controlling signal ' + signalId);
+
+			return false;
+		})
+		.catch(err => {
+			console.error(`Failed to control signal #${signalId}:`, err);
+			return false;
+		});
 }
 
 function updateAllSignals(signalsData) {
 	Object.entries(signalsData).forEach(([signalId, signalData]) => {
-		if (loggingEnabled)
-			console.log(`Updating signal ${signalId} with aspect ${signalData.CurrentAspectId} and type ${signalData.Type}`);
+		if (verboseInConsole)
+			console.log(`Updating signal ${signalId} with aspect ${signalData.CurrentAspectId} and mode ${signalData.Mode}`);
+		const existing = signalMarkers.get(signalId);
+		if (!existing)
+			return;
+
 		const aspect = signalData.CurrentAspectId || 'OFF';
-		if (!signalMarkers.has(signalId)) {
-			const position = signalData.Position;
+		const mode = signalData.Mode ?? existing.mode;
 
-			const marker = L.marker(position, {
-				icon: getSignalIcon(aspect, signalData.Type),
-				interactive: false,
-				title: signalId,
-				zIndexOffset: Math.floor(position[0] * 100000 + position[1] * 100000),
-			}).addTo(map);
+		const aspectChanged = existing.aspect !== aspect;
+		const modeChanged = existing.mode !== mode;
 
-			signalMarkers.set(signalId, { marker, aspect });
-		} else {
-			const existing = signalMarkers.get(signalId);
+		// Update state first so setIcon uses the correct aspect+mode combination
+		if (aspectChanged) existing.aspect = aspect;
+		if (modeChanged) existing.mode = mode;
 
-			if (!existing)
-				return;
+		// Regenerate icon whenever aspect OR mode changes (both affect the icon URL)
+		if (aspectChanged || modeChanged) {
+			existing.marker.setIcon(getSignalIcon(existing.aspect, existing.mode, signalData.Type));
+		}
 
-			if (existing.aspect !== aspect) {
-				existing.marker.setIcon(getSignalIcon(aspect, signalData.Type));
-				existing.aspect = aspect;
-			}
+		// If the popup is currently open, patch the DOM directly so it stays live
+		if ((aspectChanged || modeChanged) && existing.marker.isPopupOpen()) {
+			const modeLabel = document.getElementById(`sig-mode-label-${makeSafeSignalId(signalId)}`);
+			const manualCb = document.getElementById(`sig-manual-${makeSafeSignalId(signalId)}`);
+			const aspectSel = document.getElementById(`sig-aspect-select-${makeSafeSignalId(signalId)}`);
+			const aspectRow = document.getElementById(`sig-aspect-row-${makeSafeSignalId(signalId)}`);
+
+			if (modeLabel) modeLabel.textContent = mode;
+			if (manualCb) manualCb.checked = mode === 'Manual';
+			if (aspectRow) aspectRow.style.display = mode === 'Manual' ? 'block' : 'none';
+			if (aspectSel) aspectSel.value = aspect;
 		}
 	});
 }
@@ -928,6 +1132,7 @@ function getPlayerOverlayBounds(position) {
 
 function updatePlayerOverlays(data) {
 	const existingPlayerIds = Array.from(playerMarkers.keys());
+	let debugPlayerPositions = "";
 	// Remove markers from disconnected players
 	existingPlayerIds
 		.filter(id => !data.hasOwnProperty(id))
@@ -947,8 +1152,10 @@ function updatePlayerOverlays(data) {
 		marker.position = playerData.position;
 		marker.overlay.setBounds(getPlayerOverlayBounds(playerData.position));
 		marker.playerLabel.setLatLng(playerData.position);
-		//console.log(id + ': ' + playerData.position); //debug get position of player on canvas
+		if (verboseEnabled) 
+			debugPlayerPositions += id + ': y=' + playerData.position[0] + ', x=' + playerData.position[1] + '</br>'; //debug get position of player on canvas
 	});
+	if (verboseEnabled) document.getElementById('verbosePlayerPositions').innerHTML = debugPlayerPositions; //output to DOM element
 }
 
 function removePlayerOverlay(id) {
@@ -988,14 +1195,14 @@ function createPlayerMarker(id, playerData) {
 
 	// If a tooltip is used, it cannot be bound properly to the overlay as the overlay doesnt have a latlng, so create a separate marker just for the tooltip
 	const playerLabel = L.marker(playerData.position, {
-		icon: L.divIcon({ // added z-index style to make the name box appear on same layer as icon
-			html: `<div style="z-index: 1000000; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; white-space: nowrap; opacity: 0.7;">${id}</div>`,
+		icon: L.divIcon({
+			html: `<div style="background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 3px; font-weight: bold; white-space: nowrap; opacity: 0.7;">${id}</div>`,
 			iconSize: null, // let size scale with content
 			iconAnchor: [0, -20]
-		})
+		}) //TODO: possibly use zIndexOffset on the marker to set zindex
 	})
-	.addEventListener('click', () => setMarkerToFollow(overlay))
-	.addTo(map)
+		.addEventListener('click', () => setMarkerToFollow(overlay))
+		.addTo(map);
 
 	playerMarkers.set(id, { overlay, playerLabel, position: playerData.position });
 }
@@ -1066,7 +1273,7 @@ function updateCouplingControls(carData) {
 	const carsInRear = carData.carsInRear;
 
 	locoControlCoupleButton.disabled = !canCouple;
-	locoControlUncoupleButton.disabled = carsInFront == 0 && carsInRear && 0;
+	locoControlUncoupleButton.disabled = carsInFront === 0 && carsInRear === 0;
 
 	if (locoControlUncoupleSelect.childElementCount == carsInFront + carsInRear) {
 		return;
@@ -1351,7 +1558,7 @@ function updatescaleMarkerFactor() {
 	// Note, after _much fiddling_ with different formulas, (including bitwise operators)
 	// Simple 2 to the power of "zoom difference" seemed the best
 	scaleMarkerFactor = zoom > initialZoom ? 1 : (2 ** (initialZoom - zoom));
-	if (loggingEnabled)
+	if (verboseInConsole)
 		console.info('Map Zoom:', zoom, 'Scale Factor:', scaleMarkerFactor);
 
 	// update bounds only for selected locos to minimize work and avoid changing non-selected markers
@@ -1367,6 +1574,11 @@ function updatescaleMarkerFactor() {
 			overlay.setBounds(getPlayerOverlayBounds(position));
 		});
 	}
+
+	// Refresh signal icons so their size tracks the current zoom level
+	signalMarkers.forEach(({ marker, aspect, mode, type }) => {
+		marker.setIcon(getSignalIcon(aspect, mode, type));
+	});
 }
 
 // Update the loco selection sidebar. Shows ordered list of L- IDs with checkboxes.
@@ -1402,7 +1614,7 @@ function updateLocoListSidebar() {
 				if (target.checked) selectedLocos.add(locoId); else selectedLocos.delete(locoId);
 				const marker = carMarkers.get(locoId);
 				const carData = allCarData.get(locoId);
-				if (loggingEnabled)
+				if (verboseInConsole)
 					console.info('Loco data', carData);
 				if (marker && carData) marker.setBounds(getCarOverlayBounds(locoId, carData));
 			}
@@ -1557,6 +1769,131 @@ function updateLoop() {
 		});
 }
 
-junctionsReady.then(_ => {
+/////////////////////
+// signal visibility
+
+const validYards = new Set([
+	'IMW', 'MF', 'CP', 'CW', 'SW', 'FRS', 'OWC', 'FM', 'SM', 'FRC',
+	'OR', 'FF', 'IME', 'MB', 'OWN', 'GF', 'CME', 'HB', 'CS', 'CMS'
+]);
+
+const signalVisibility = {
+	show: true,
+	all: true,
+	distant: true,
+	yards: {}
+};
+
+function yardFromSignalId(signalId) {
+	const stripped = signalId.startsWith('#') ? signalId.slice(1) : signalId;
+	const part = stripped.split('-')[2];
+	return part ? part.split(':')[0] : null;
+}
+
+function applySignalVisibility() {
+	signalMarkers.forEach(({ marker, type }, signalId) => {
+		const yard = yardFromSignalId(signalId);
+		const yardVisible = yard ? (signalVisibility.yards[yard] ?? true) : true;
+		const distantVisible = type === 'Distant' ? signalVisibility.distant : true;
+		const visible = signalVisibility.show
+			&& signalVisibility.all
+			&& yardVisible
+			&& distantVisible;
+
+		if (visible) {
+			if (!map.hasLayer(marker)) marker.addTo(map);
+		} else {
+			if (map.hasLayer(marker)) marker.remove();
+		}
+	});
+}
+
+function buildSignalsSidebar(installed) {
+	const content = document.getElementById('signals-sidebar-content');
+	if (!content) return;
+
+	if (!installed) {
+		content.innerHTML = '<p style="margin:12px 16px;color:#888;font-style:italic;">Signals mod not installed.</p>';
+		return;
+	}
+
+	const presentYards = [...new Set(
+		[...signalMarkers.keys()].map(yardFromSignalId).filter(y => y && validYards.has(y))
+	)].sort();
+
+	presentYards.forEach(yard => { signalVisibility.yards[yard] = true; });
+
+	const yardCheckboxes = presentYards.map(yard => `
+		<label class="sig-filter-label">
+			<input type="checkbox" class="sig-filter-yard" data-yard="${yard}" checked>
+			<span>${yard}</span>
+		</label>`).join('');
+
+	content.innerHTML = `
+		<div class="sig-filter-section">
+			<label class="sig-filter-label sig-filter-master">
+				<input type="checkbox" id="sig-filter-show" checked>
+				<span>Show all signals</span>
+			</label>
+		</div>
+		<div id="sig-filter-sub" class="sig-filter-section">
+			<label class="sig-filter-label">
+				<input type="checkbox" id="sig-filter-distant" checked>
+				<span>Show Distant signals</span>
+			</label>
+			<div class="sig-filter-divider">Yards</div>
+			<div class="sig-filter-yard-grid">
+				${yardCheckboxes}
+			</div>
+		</div>`;
+
+	const subSection = content.querySelector('#sig-filter-sub');
+	const allSubInputs = () => subSection.querySelectorAll('input');
+
+	const showCb = content.querySelector('#sig-filter-show');
+	showCb.addEventListener('change', e => {
+		signalVisibility.show = e.target.checked;
+		allSubInputs().forEach(el => { el.disabled = !e.target.checked; });
+		subSection.style.opacity = e.target.checked ? '' : '0.4';
+		applySignalVisibility();
+	});
+
+	const distantCb = content.querySelector('#sig-filter-distant');
+	distantCb.addEventListener('change', e => {
+		signalVisibility.distant = e.target.checked;
+		applySignalVisibility();
+	});
+
+	const yardGrid = content.querySelector('.sig-filter-yard-grid');
+	yardGrid.addEventListener('change', e => {
+		const cb = e.target;
+		if (!cb.matches('.sig-filter-yard')) return;
+		signalVisibility.yards[cb.dataset.yard] = cb.checked;
+		applySignalVisibility();
+	});
+}
+
+let signalsInstalled = false;
+
+const signalsReady = junctionsReady
+	.then(_ => fetch(new URL('/signals', location)))
+	.then(resp => {
+		if (!resp.ok) throw new Error(`Signals endpoint failed: HTTP ${resp.status} ${resp.statusText}`);
+		return resp.json();
+	})
+	.catch(err => {
+		console.error('Failed to load signal data:', err);
+		return null;
+	})
+	.then(allSignalsData => {
+		if (allSignalsData !== null) {
+			signalsInstalled = true;
+			Object.entries(allSignalsData).forEach(([signalId, signalData]) =>
+				createSignalMarker(signalId, signalData));
+		}
+	});
+
+signalsReady.then(_ => {
+	buildSignalsSidebar(signalsInstalled);
 	updateLoop();
 });
